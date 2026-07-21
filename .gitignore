@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Node / build artifacts (none for static site, but just in case)
+node_modules/
+dist/
+*.log
+
+# Test data (contains sample passwords, not needed in production)
+test-data/
