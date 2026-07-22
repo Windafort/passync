@@ -10,7 +10,7 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Node / build artifacts (none for static site, but just in case)
+# Node / build artifacts
 node_modules/
 dist/
 *.log
