@@ -36,26 +36,33 @@ A pure static web application to import, manage, and export passwords from multi
 
 ## Quick Start
 
-### Online (via GitHub Pages)
-
-1. Fork or clone this repo.
-2. Enable **GitHub Pages** in your repo Settings → Pages → source: `main` branch `/`.
-3. Open `https://windafort.github.io/passync/` in a browser.
-4. Drag your exported password files onto the import area and start managing.
-
 ### Local Development
 
-Because the app uses ES modules (`type="module"`), it must be served via HTTP — it will **not** work by opening `index.html` directly from the filesystem (`file://`).
-
 ```bash
-# With Python
-python3 -m http.server 8080
-
-# With Node.js
-npx serve .
+npm install
+npm run dev
 ```
 
-Then open `http://localhost:8080` in your browser.
+Opens at `http://localhost:5173/passync/` with hot module replacement.
+
+### Production Build
+
+```bash
+npm run build      # outputs to dist/
+npm run preview    # preview production build locally
+```
+
+### Deployment (GitHub Pages)
+
+The app is deployed via **GitHub Actions**. On every push to `main`, the workflow builds the Vue app and deploys the `dist/` output.
+
+**One-time setup** — configure the Pages source:
+
+1. Go to **Settings → Pages** in the repository
+2. Under **Build and deployment → Source**, select **"GitHub Actions"**
+3. Push to `main` (or re-run the latest workflow) to trigger the deployment
+
+The site will be available at `https://<user>.github.io/passync/`.
 
 ---
 
@@ -182,17 +189,40 @@ Examples:
 
 ```
 passync/
-├── index.html           ← Entry point (UI markup)
-├── css/
-│   └── style.css        ← All styling (light/dark theme)
-├── js/
-│   ├── app.js           ← Bootstrap wiring
-│   ├── data.js          ← Data model + localStorage persistence
-│   ├── crypto.js        ← AES-256-GCM encryption (Web Crypto API)
-│   ├── import.js        ← CSV parser + provider-specific parsers
-│   ├── export.js        ← Provider-specific exporters
-│   └── ui.js            ← DOM rendering, events, modals
-├── test-data/           ← Sample export files for manual testing
+├── index.html              ← Vite dev entry point
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── .github/
+│   └── workflows/
+│       └── deploy.yml      ← GitHub Actions deploy to Pages
+├── src/
+│   ├── main.ts             ← Bootstrap + Vue app mount
+│   ├── App.vue             ← Root orchestrator
+│   ├── types/
+│   │   └── entry.ts        ← Entry, Provider types
+│   ├── composables/
+│   │   ├── useCrypto.ts    ← AES-256-GCM encryption (Web Crypto API)
+│   │   ├── useImport.ts    ← CSV parser + provider-specific parsers
+│   │   └── useExport.ts    ← Provider-specific exporters
+│   ├── stores/
+│   │   ├── data.ts         ← Reactive entries store (CRUD, sort, filter, search)
+│   │   ├── config.ts       ← Dark mode toggle
+│   │   └── toast.ts        ← Toast notifications
+│   └── components/
+│       ├── AppHeader.vue
+│       ├── DropZone.vue
+│       ├── ImportSummary.vue
+│       ├── StatsBar.vue
+│       ├── ToolBar.vue
+│       ├── PasswordTable.vue
+│       ├── BaseModal.vue
+│       ├── LockModal.vue
+│       ├── EditModal.vue
+│       ├── DedupModal.vue
+│       ├── ConfirmDialog.vue
+│       └── ToastContainer.vue
+├── test-data/              ← Sample export files for manual testing
 ├── .gitignore
 ├── LICENSE
 └── README.md
