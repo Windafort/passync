@@ -1,0 +1,14 @@
+/* Minimal additions to Bootstrap 5.3 — only for things the framework has no
+   utility or component for. Everything else uses stock Bootstrap classes. */
+
+/* Bootstrap's .table-light variant is a fixed colour that ignores data-bs-theme.
+   Setting the table's own CSS variables instead keeps the header distinct from
+   the body while following the active light/dark theme. */
+.table > thead {
+  --bs-table-bg: var(--bs-tertiary-bg);
+}
+
+/* Bootstrap 5.3 ships no cursor utility. */
+.cursor-pointer {
+  cursor: pointer;
+}

@@ -2,7 +2,7 @@
 import { useConfig } from '../stores/config'
 import { useData } from '../stores/data'
 
-const props = defineProps<{
+defineProps<{
   hasEncryptedData: boolean
   entryCount: number
 }>()
@@ -22,42 +22,60 @@ function handleLock(): void {
 </script>
 
 <template>
-  <header class="d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
-    <div class="d-flex align-items-center gap-2">
-      <h1 class="mb-0 fs-4 fw-bold">Passync</h1>
-      <span class="badge bg-secondary">v1.0</span>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <span
-        v-if="entryCount > 0"
-        class="badge"
-        :class="hasEncryptedData ? 'bg-success' : 'bg-warning text-dark'"
-      >
-        {{ entryCount }} entries &middot; {{ hasEncryptedData ? 'Saved' : 'Unsaved' }}
+  <nav class="navbar bg-body-tertiary border-bottom">
+    <div class="container-fluid px-4">
+      <span class="navbar-brand d-flex align-items-center gap-2 mb-0">
+        <span aria-hidden="true">🔐</span>
+        <span class="fw-bold">Passync</span>
+        <span class="badge text-bg-secondary align-self-center">v1.0</span>
       </span>
-      <button
-        v-if="entryCount > 0"
-        class="btn btn-sm"
-        :class="hasEncryptedData ? 'btn-outline-danger' : 'btn-outline-primary'"
-        @click="$emit('encrypt-toggle')"
-      >
-        {{ hasEncryptedData ? '🔓 Decrypt' : '🔒 Encrypt' }}
-      </button>
-      <button
-        v-if="hasEncryptedData"
-        class="btn btn-sm btn-outline-secondary"
-        title="Lock vault"
-        @click="handleLock"
-      >
-        🔐
-      </button>
-      <button
-        class="btn btn-sm btn-outline-secondary"
-        title="Toggle dark mode"
-        @click="toggleDark"
-      >
-        {{ darkMode ? '☀' : '☽' }}
-      </button>
+
+      <div class="d-flex align-items-center gap-2">
+        <span
+          v-if="entryCount > 0"
+          class="badge rounded-pill"
+          :class="hasEncryptedData ? 'text-bg-success' : 'text-bg-warning'"
+          :title="hasEncryptedData
+            ? 'Your vault is encrypted in local storage'
+            : 'Entries live in memory only and are lost on reload'"
+        >
+          {{ entryCount }} {{ entryCount === 1 ? 'entry' : 'entries' }} &middot;
+          {{ hasEncryptedData ? 'Saved' : 'Unsaved' }}
+        </span>
+
+        <button
+          v-if="entryCount > 0"
+          type="button"
+          class="btn btn-sm"
+          :class="hasEncryptedData ? 'btn-outline-danger' : 'btn-outline-primary'"
+          :title="hasEncryptedData ? 'Remove encryption from this vault' : 'Encrypt and save this vault'"
+          @click="emit('encrypt-toggle')"
+        >
+          {{ hasEncryptedData ? '🔓 Decrypt' : '🔒 Encrypt' }}
+        </button>
+
+        <button
+          v-if="hasEncryptedData"
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          title="Lock vault"
+          aria-label="Lock vault"
+          @click="handleLock"
+        >
+          🔐
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+          :aria-label="darkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+          :aria-pressed="darkMode"
+          @click="toggleDark"
+        >
+          {{ darkMode ? '☀' : '☽' }}
+        </button>
+      </div>
     </div>
-  </header>
+  </nav>
 </template>

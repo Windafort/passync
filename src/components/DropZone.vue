@@ -8,6 +8,10 @@ const emit = defineEmits<{
 const fileInput = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 
+/* dragenter/dragleave also fire when crossing child elements, so track depth
+   instead of toggling a boolean, which would flicker the highlight. */
+let dragDepth = 0
+
 function handleClick(): void {
   fileInput.value?.click()
 }
@@ -19,21 +23,49 @@ function handleChange(event: Event): void {
     input.value = ''
   }
 }
+
+function handleDragEnter(): void {
+  dragDepth += 1
+  isDragOver.value = true
+}
+
+function handleDragLeave(): void {
+  dragDepth = Math.max(0, dragDepth - 1)
+  if (dragDepth === 0) isDragOver.value = false
+}
+
+function handleDrop(event: DragEvent): void {
+  dragDepth = 0
+  isDragOver.value = false
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) emit('files-selected', files)
+}
 </script>
 
 <template>
   <div
-    class="border rounded-3 p-5 text-center cursor-pointer"
-    :class="{ 'bg-primary bg-opacity-10 border-primary': isDragOver }"
-    style="border-style: dashed !important; border-width: 2px !important"
+    class="card border-2 drop-zone text-center cursor-pointer"
+    :class="isDragOver ? 'border-primary bg-primary-subtle' : 'border-secondary-subtle'"
+    role="button"
+    tabindex="0"
+    aria-label="Choose or drop exported password files"
     @click="handleClick"
-    @dragover.prevent="isDragOver = true"
-    @dragleave="isDragOver = false"
-    @drop.prevent="isDragOver = false; emit('files-selected', $event.dataTransfer!.files)"
+    @keydown.enter.prevent="handleClick"
+    @keydown.space.prevent="handleClick"
+    @dragenter.prevent="handleDragEnter"
+    @dragover.prevent
+    @dragleave.prevent="handleDragLeave"
+    @drop.prevent="handleDrop"
   >
-    <div class="fs-1 mb-2">📂</div>
-    <p class="mb-1">Drop exported password files here</p>
-    <p class="text-muted small mb-0">Supports: Bitwarden, Chrome, Edge, Opera, Firefox, Safari (CSV &amp; JSON, max 5MB)</p>
+    <div class="card-body p-5">
+      <div class="display-4 mb-3" aria-hidden="true">📂</div>
+      <h2 class="h5 card-title">Drop exported password files here</h2>
+      <p class="card-text text-body-secondary mb-4">or click to browse your computer</p>
+      <button type="button" class="btn btn-primary" tabindex="-1">Choose files</button>
+      <p class="card-text text-body-tertiary small mt-4 mb-0">
+        Bitwarden, Chrome, Edge, Opera, Firefox and Safari &middot; CSV &amp; JSON &middot; max 5&nbsp;MB per file
+      </p>
+    </div>
     <input
       ref="fileInput"
       type="file"
@@ -46,5 +78,8 @@ function handleChange(event: Event): void {
 </template>
 
 <style scoped>
-.cursor-pointer { cursor: pointer; }
+/* Bootstrap has no dashed-border utility. */
+.drop-zone {
+  border-style: dashed;
+}
 </style>
