@@ -62,58 +62,81 @@ function handleSave(): void {
 </script>
 
 <template>
-  <BaseModal :visible="visible" @close="$emit('close')">
-    <div class="modal-header">
-      <h3 class="modal-title fs-5">Edit Entry</h3>
-      <button type="button" class="btn-close" aria-label="Close" @click="$emit('close')"></button>
-    </div>
-    <div class="modal-body">
-      <div class="mb-3">
-        <label class="form-label">Provider</label>
-        <select v-model="provider" class="form-select">
-          <option value="bitwarden">Bitwarden</option>
-          <option value="chromium">Chrome / Edge / Opera</option>
-          <option value="firefox">Firefox</option>
-          <option value="safari">Safari</option>
-        </select>
+  <BaseModal :visible="visible" size="lg" scrollable @close="emit('close')">
+    <form @submit.prevent="handleSave">
+      <div class="modal-header">
+        <h2 class="modal-title h5">Edit Entry</h2>
+        <button type="button" class="btn-close" aria-label="Close" @click="emit('close')"></button>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Folder</label>
-        <input v-model="folder" type="text" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input v-model="name" type="text" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">URL</label>
-        <input v-model="url" type="text" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input v-model="username" type="text" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <div class="input-group">
-          <input v-model="passwordVal" :type="showPassword ? 'text' : 'password'" class="form-control" />
-          <button class="btn btn-outline-secondary" type="button" @click="showPassword = !showPassword">
-            {{ showPassword ? '🙈' : '👁' }}
-          </button>
+
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="editProvider" class="form-label">Provider</label>
+            <select id="editProvider" v-model="provider" class="form-select">
+              <option value="bitwarden">Bitwarden</option>
+              <option value="chromium">Chrome / Edge / Opera</option>
+              <option value="firefox">Firefox</option>
+              <option value="safari">Safari</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="editFolder" class="form-label">Folder</label>
+            <input id="editFolder" v-model="folder" type="text" class="form-control" />
+          </div>
+
+          <div class="col-md-6">
+            <label for="editName" class="form-label">Name</label>
+            <input id="editName" v-model="name" type="text" class="form-control" />
+          </div>
+
+          <div class="col-md-6">
+            <label for="editUrl" class="form-label">URL</label>
+            <input id="editUrl" v-model="url" type="text" class="form-control" />
+          </div>
+
+          <div class="col-md-6">
+            <label for="editUsername" class="form-label">Username</label>
+            <input id="editUsername" v-model="username" type="text" class="form-control" autocomplete="off" />
+          </div>
+
+          <div class="col-md-6">
+            <label for="editPassword" class="form-label">Password</label>
+            <div class="input-group">
+              <input
+                id="editPassword"
+                v-model="passwordVal"
+                :type="showPassword ? 'text' : 'password'"
+                class="form-control"
+                autocomplete="off"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                @click="showPassword = !showPassword"
+              >{{ showPassword ? '🙈' : '👁' }}</button>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label for="editNotes" class="form-label">Notes</label>
+            <textarea id="editNotes" v-model="notes" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label for="editTotp" class="form-label">TOTP</label>
+            <input id="editTotp" v-model="totp" type="text" class="form-control" autocomplete="off" />
+            <div class="form-text">One-time password secret or otpauth:// URI.</div>
+          </div>
         </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Notes</label>
-        <textarea v-model="notes" class="form-control" rows="2"></textarea>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" @click="emit('close')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
       </div>
-      <div class="mb-3">
-        <label class="form-label">TOTP</label>
-        <input v-model="totp" type="text" class="form-control" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
-      <button type="button" class="btn btn-primary" @click="handleSave">Save</button>
-    </div>
+    </form>
   </BaseModal>
 </template>

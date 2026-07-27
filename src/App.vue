@@ -30,6 +30,8 @@ const editEntryId = ref<string | null>(null)
 const showDedup = ref(false)
 const confirmVisible = ref(false)
 const confirmMessage = ref('')
+const confirmTitle = ref('Are you sure?')
+const confirmLabel = ref('Confirm')
 const confirmCallback = ref<(() => void) | null>(null)
 const importSummary = ref<{ file: string; count: number; provider: string }[]>([])
 const importTotal = ref(0)
@@ -154,11 +156,15 @@ function handleClear(): void {
   const msg = hasEncrypted
     ? 'Clear all entries and discard the encrypted vault? This cannot be undone.'
     : 'Clear all entries? This cannot be undone.'
-  showConfirm(msg, () => {
-    data.clearAll()
-    if (hasEncrypted) data.removeEncryptedData()
-    toast.show('All entries cleared', 'info')
-  })
+  showConfirm(
+    msg,
+    () => {
+      data.clearAll()
+      if (hasEncrypted) data.removeEncryptedData()
+      toast.show('All entries cleared', 'info')
+    },
+    { title: 'Clear all entries?', confirmLabel: 'Clear all' }
+  )
 }
 
 function handleExport(provider: string, format?: string): void {
@@ -183,7 +189,8 @@ function handleEncryptToggle(): void {
       () => {
         data.removeEncryptedData()
         toast.show('Vault decrypted. Entries remain in memory only.', 'info')
-      }
+      },
+      { title: 'Remove encryption?', confirmLabel: 'Remove encryption' }
     )
   } else {
     lockMode.value = 'encrypt'
@@ -202,14 +209,24 @@ function handleEdit(id: string): void {
 }
 
 function handleDelete(id: string, name: string): void {
-  showConfirm(`Delete "${name}"? This cannot be undone.`, () => {
-    data.deleteEntry(id)
-    toast.show('Entry deleted', 'info')
-  })
+  showConfirm(
+    `Delete "${name || 'this entry'}"? This cannot be undone.`,
+    () => {
+      data.deleteEntry(id)
+      toast.show('Entry deleted', 'info')
+    },
+    { title: 'Delete entry?', confirmLabel: 'Delete' }
+  )
 }
 
-function showConfirm(message: string, onConfirm: () => void): void {
+function showConfirm(
+  message: string,
+  onConfirm: () => void,
+  options: { title?: string; confirmLabel?: string } = {}
+): void {
   confirmMessage.value = message
+  confirmTitle.value = options.title ?? 'Are you sure?'
+  confirmLabel.value = options.confirmLabel ?? 'Confirm'
   confirmCallback.value = onConfirm
   confirmVisible.value = true
 }
@@ -224,12 +241,16 @@ function handleConfirmCancel(): void {
 }
 
 function handleDiscardVault(): void {
-  showConfirm('Discard the encrypted vault? All saved data will be permanently lost.', () => {
-    data.removeEncryptedData()
-    data.clearAll()
-    showLock.value = false
-    toast.show('Encrypted vault discarded', 'info')
-  })
+  showConfirm(
+    'Discard the encrypted vault? All saved data will be permanently lost.',
+    () => {
+      data.removeEncryptedData()
+      data.clearAll()
+      showLock.value = false
+      toast.show('Encrypted vault discarded', 'info')
+    },
+    { title: 'Discard vault?', confirmLabel: 'Discard vault' }
+  )
 }
 </script>
 
@@ -243,35 +264,43 @@ function handleDiscardVault(): void {
     />
 
     <main class="flex-grow-1 d-flex flex-column overflow-hidden">
-      <DropZone
-        v-if="!hasEntries()"
-        @files-selected="handleFiles"
-      />
-
-      <ImportSummary
-        v-if="hasEntries()"
-        :summary="importSummary"
-        :total="importTotal"
-        :visible="showSummary"
-      />
-
-      <StatsBar v-if="hasEntries()" />
-
-      <ToolBar
-        v-if="hasEntries()"
-        :has-entries="hasEntries()"
-        @import="handleImport"
-        @dedup="handleDedup"
-        @clear="handleClear"
-        @export="handleExport"
-      />
-
-      <div v-if="hasEntries()" class="flex-grow-1 overflow-auto">
-        <PasswordTable
-          @edit="handleEdit"
-          @delete="handleDelete"
-        />
+      <div v-if="!hasEntries()" class="container-fluid flex-grow-1 d-flex align-items-center px-4 py-4">
+        <div class="row justify-content-center w-100">
+          <div class="col-12 col-md-10 col-lg-8 col-xxl-6">
+            <DropZone @files-selected="handleFiles" />
+          </div>
+        </div>
       </div>
+
+      <template v-else>
+        <ToolBar
+          :has-entries="hasEntries()"
+          @import="handleImport"
+          @dedup="handleDedup"
+          @clear="handleClear"
+          @export="handleExport"
+        />
+
+        <div class="flex-grow-1 overflow-auto">
+          <div class="container-fluid d-flex flex-column gap-3 px-4 py-4">
+            <ImportSummary
+              :summary="importSummary"
+              :total="importTotal"
+              :visible="showSummary"
+              @dismiss="showSummary = false"
+            />
+
+            <StatsBar />
+
+            <div class="card overflow-hidden shadow-sm">
+              <PasswordTable
+                @edit="handleEdit"
+                @delete="handleDelete"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
     </main>
 
     <LockModal
@@ -295,6 +324,8 @@ function handleDiscardVault(): void {
     <ConfirmDialog
       :visible="confirmVisible"
       :message="confirmMessage"
+      :title="confirmTitle"
+      :confirm-label="confirmLabel"
       @confirm="handleConfirm"
       @cancel="handleConfirmCancel"
     />
