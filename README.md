@@ -64,6 +64,50 @@ The app is deployed via **GitHub Actions**. On every push to `main`, the workflo
 
 The site will be available at `https://<user>.github.io/passync/`.
 
+### Deployment (Docker)
+
+Because Passync is a fully static single-page app, it can run anywhere you can
+serve files. A multi-stage `Containerfile` builds the bundle with Vite and serves
+it with nginx — no Node.js in the runtime image, just ~40 MB of nginx + static assets.
+
+The build is **engine-agnostic**. We use **`Containerfile`** as the image recipe
+and **`compose.yml`** for orchestration, and `compose.yml` pins
+`dockerfile: Containerfile` explicitly — so the *exact same* config builds under both
+Docker Compose and Podman Compose (Podman runs rootless with no daemon).
+
+**Quick start (pick your engine):**
+
+```bash
+# Docker
+docker compose up --build
+
+# or Podman (rootless, daemon-free)
+podman compose up --build
+```
+
+Then open <http://localhost:8080/>.
+
+**Build & run directly:**
+
+```bash
+# Podman auto-detects Containerfile; Docker does not, so pass -f to it.
+docker build -t passync -f Containerfile .
+podman build  -t passync                     # (Containerfile auto-detected)
+
+docker run --rm -p 8080:80 passync
+podman run --rm -p 8080:80 passync
+```
+
+Notes:
+
+- The container is served from the web-server **root** (`/`). This differs from the
+  GitHub Pages deploy, which lives under `/passync/` — that base path comes from
+  `vite.config.ts` and only applies to the static site. The image build passes
+  `--base=/` to Vite so it's served cleanly at root without touching the existing
+  Pages configuration.
+- nginx is configured with SPA fallback (any route serves `index.html`), gzip,
+  long-lived caching for hashed `/assets/`, and security headers (CSP, nosniff, etc.).
+
 ---
 
 ## Usage

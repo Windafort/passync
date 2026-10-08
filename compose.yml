@@ -1,0 +1,13 @@
+services:
+  passync:
+    build:
+      context: .
+      # Explicit so Docker Compose AND Podman build from the same file.
+      # (Docker does NOT auto-detect "Containerfile"; it defaults to
+      # "Dockerfile", which is why we pin it here.)
+      dockerfile: Containerfile
+    image: passync:latest
+    container_name: passync
+    ports:
+      - "8080:80"   # host:container -> http://localhost:8080/
+    restart: unless-stopped

@@ -1,0 +1,22 @@
+# Dependencies & build artifacts (recreated inside the container)
+node_modules
+npm-debug.log*
+*.log
+
+# Build output - generated in the container, must not mask the context dir
+dist
+*.tsbuildinfo
+
+# Version control / CI
+.git
+.github
+.gitignore
+
+# Sample passwords / test fixtures - never ship these in the image
+test-data
+
+# Editor / OS noise
+.idea
+.vscode
+.DS_Store
+Thumbs.db
